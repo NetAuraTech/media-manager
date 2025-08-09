@@ -1,0 +1,17 @@
+{
+  "extends": "../../../../../../app-global/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@core-cms-shared/*": ["../../../vendor/netauratech/core-cms/src/resources/ts/shared/*"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.d.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

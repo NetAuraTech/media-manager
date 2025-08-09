@@ -1,0 +1,46 @@
+{
+    "name": "netauratech/media-manager",
+    "description": "A Laravel package to manage media files (images, documents, videos) for the core-cms.",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "cms",
+        "core"
+    ],
+    "autoload": {
+        "psr-4": {
+            "Netauratech\\MediaManager\\": "src/",
+            "Database\\Factories\\": "src/database/factories/",
+            "Database\\Seeders\\": "src/database/seeders/"
+        }
+    },
+    "authors": [
+        {
+            "name": "NetAuraTech",
+            "email": "contact@netauratech.fr"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "intervention/image": "^2.7",
+        "laravel/framework": "^12.0",
+        "league/glide-symfony": "^2.0",
+        "netauratech/core-cms": "dev-main"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Netauratech\\MediaManager\\MediaManagerServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../core-cms"
+        }
+    ]
+}
