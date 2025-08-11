@@ -204,4 +204,47 @@ class MediaProvider implements MediaProviderInterface
 
         return $this->url($id, $params);
     }
+
+    /**
+     * Generates an HTML <img> tag to display an image.
+     *
+     * This function takes an image entity or path and constructs an <img> tag
+     * with options for alternative text, height, CSS transitions,
+     * additional classes, and preloading.
+     *
+     * @param int $id The image id.
+     * @param string|null $alt The alternative text for the image, for accessibility. Defaults to null.
+     * @param int|null $width The width of the image in pixels. Defaults to null.
+     * @param string|null $transitionName A CSS transition name (e.g., for frontend animations). Defaults to null.
+     * @param string|null $class Additional CSS classes to apply to the <img> tag. Defaults to null.
+     * @return string|null The generated HTML <img> tag as a string, or null if the image cannot be generated.
+     */
+    public function image_tag(int $id, ?string $alt = null, ?int $width = null, ?string $transitionName = null, ?string $class = null): ?string
+    {
+        $media = $this->get($id);
+
+        if ($media === null || !$media->isImage()) {
+            return null;
+        }
+
+        if(!$width) {
+            $width = $media->width;
+        }
+
+        $style = $transitionName ? " style=\"view-transition-name: $transitionName\"" : '';
+
+        $targetHeight = $media->height * ($width / $media->width);
+
+        $url = $this->url($media->id, ['w' => $width, 'h' => $targetHeight]);
+
+        if ('' !== $url) {
+            if (!$alt) {
+                $alt = $media->filename;
+            }
+
+            return "<img {$style} class=\"$class\" src=\"$url\" width=\"$width\" height=\"$targetHeight\" alt=\"$alt\"/>";
+        }
+
+        return null;
+    }
 }
