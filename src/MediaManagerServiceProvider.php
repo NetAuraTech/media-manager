@@ -99,5 +99,23 @@ class MediaManagerServiceProvider extends ServiceProvider
         $formRegistry->registerValidationRules('content_form', [
             $mediaKey => ['nullable', 'integer'],
         ]);
+
+        $formRegistry->registerFormFields('content_meta', [
+            'meta' => [
+                'template' => 'media-manager::blog.meta',
+            ],
+        ]);
+
+        $formRegistry->registerFormFields('blog_media', [
+            'media' => [
+                'template' => 'media-manager::blog.media',
+            ],
+        ]);
+
+        $formRegistry->registerFormFields('blog_media_single', [
+            'media' => [
+                'template' => 'media-manager::blog.media_single',
+            ],
+        ]);
     }
 }
