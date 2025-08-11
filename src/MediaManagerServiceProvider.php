@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Netauratech\CoreCms\Contracts\MediaProviderInterface;
 use Netauratech\CoreCms\Events\ContentSaved;
+use Netauratech\CoreCms\Events\LangLoaded;
 use Netauratech\CoreCms\Form\FormRegistry;
 use Netauratech\CoreCms\Services\AssetManager;
 use Netauratech\MediaManager\Listeners\UpdateContentMedia;
@@ -60,6 +61,7 @@ class MediaManagerServiceProvider extends ServiceProvider
 
         // Lang
         $this->loadTranslationsFrom(__DIR__.'/lang', 'media-manager');
+        LangLoaded::dispatch('media-manager');
 
         //Route Web
         Route::group([
