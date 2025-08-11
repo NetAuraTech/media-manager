@@ -127,7 +127,6 @@ export default class InputMedia {
      * @param name
      */
     static defineElement(name: string = 'input-media') {
-        console.log('te')
         customElements.define(name, InputMediaElement, {extends: 'input'})
     }
 }
