@@ -73,7 +73,7 @@ class MediaManagerServiceProvider extends ServiceProvider
         //Route api
         Route::group([
             'prefix' => 'api',
-            'name' => 'api.',
+            'as' => 'api.',
             'middleware' => ['web', 'auth'],
         ], function () {
             $this->loadRoutesFrom(__DIR__.'/routes/api.php');
