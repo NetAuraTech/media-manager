@@ -21,24 +21,12 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class MediaProvider implements MediaProviderInterface
 {
-    protected Server $glideServer;
     protected UrlBuilder $urlBuilder;
 
     protected string $path = "medias";
 
     public function __construct()
     {
-        $this->glideServer = ServerFactory::create([
-            'source' => Storage::disk('public')->getDriver(),
-            'cache' => Storage::disk('local')->getDriver(),
-            'driver' => 'imagick',
-            'response' => new SymfonyResponseFactory(app('request')),
-            'defaults' => [
-                'q' => 85,
-                'fm' => 'webp',
-                'fit' => 'crop',
-            ],
-        ]);
         $this->urlBuilder = UrlBuilderFactory::create('/media/resize/', config('app.key'));
     }
 
@@ -172,7 +160,19 @@ class MediaProvider implements MediaProviderInterface
                 ob_clean();
             }
 
-            return $this->glideServer->getImageResponse($this->path . '/' . $filename, $request->all());
+            $glideServer = ServerFactory::create([
+                'source' => Storage::disk('public')->getDriver(),
+                'cache' => Storage::disk('local')->getDriver(),
+                'driver' => 'imagick',
+                'response' => new SymfonyResponseFactory(app('request')),
+                'defaults' => [
+                    'q' => 85,
+                    'fm' => 'webp',
+                    'fit' => 'crop',
+                ],
+            ]);
+
+            return $glideServer->getImageResponse($this->path . '/' . $filename, $request->all());
         } catch (SignatureException) {
             throw new HttpException(403, __('cms.asset.signature.invalid'));
         } catch (FileNotFoundException $e) {
