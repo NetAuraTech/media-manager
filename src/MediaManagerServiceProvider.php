@@ -117,5 +117,14 @@ class MediaManagerServiceProvider extends ServiceProvider
                 'template' => 'media-manager::blog.media_single',
             ],
         ]);
+
+        $formRegistry->registerFormFields('option_media', [
+            'media' => [
+                'label' => __('media-manager::admin.media.value'),
+                'type' => 'media',
+                'template' => 'media-manager::option.media',
+                'renderer' => 'media-manager::option.media_renderer',
+            ],
+        ]);
     }
 }
