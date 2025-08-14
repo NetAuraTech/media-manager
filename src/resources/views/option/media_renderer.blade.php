@@ -1,5 +1,7 @@
 <?php
-    $value = $value ?? null;
+    $value = $value ?? "";
 ?>
 
-{!! image_tag($value, null, 150) !!}
+@if($value !== "")
+    {!! image_tag($value, null, 150) !!}
+@endif
