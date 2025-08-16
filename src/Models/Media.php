@@ -75,7 +75,17 @@ class Media extends Model
      */
     public function isImage(): bool
     {
-        return $this->type === 'image';
+        return $this->type === 'image' && !$this->isSvgImage();
+    }
+
+    /**
+     * Checks if the media is a svg.
+     *
+     * @return bool
+     */
+    public function isSvgImage(): bool
+    {
+        return $this->mime_type === 'image/svg+xml';
     }
 
     /**

@@ -223,15 +223,59 @@ class MediaProvider implements MediaProviderInterface
     {
         $media = $this->get($id);
 
-        if ($media === null || !$media->isImage()) {
+        if($media === null) {
             return null;
+        }
+
+        $style = $transitionName ? " style=\"view-transition-name: $transitionName\"" : '';
+
+        if($media->isSvgImage()) {
+            if(!$width) {
+                $width = $media->width ?: 512;
+            }
+
+            $targetHeight = ($media->height ?? 512) * ($width /( $media->width ?? 512));
+
+            $svgContent = Storage::disk('public')->get("medias/{$media->filename}");
+
+            if ($svgContent !== false) {
+                preg_match('/<svg[^>]*viewBox="([^"]*)"/', $svgContent, $matches);
+                $viewBox = $matches[1] ?? null;
+
+                preg_match('/<svg[^>]*fill="([^"]*)"/', $svgContent, $fillMatch);
+                preg_match('/<svg[^>]*stroke="([^"]*)"/', $svgContent, $strokeMatch);
+                preg_match('/<svg[^>]*stroke-width="([^"]*)"/', $svgContent, $strokeWidthMatch);
+
+                $fill = $fillMatch[1] ?? null;
+                $stroke = $strokeMatch[1] ?? null;
+                $strokeWidth = $strokeWidthMatch[1] ?? null;
+
+                $svgContent = preg_replace('/<svg[^>]*>|<\/svg>/', '', $svgContent);
+
+                $svgTag = "<svg {$style} class=\"$class\" width=\"$width\" height=\"$targetHeight\" aria-label=\"$alt\"";
+
+                if ($viewBox) {
+                    $svgTag .= " viewBox=\"$viewBox\"";
+                }
+                if ($fill) {
+                    $svgTag .= " fill=\"$fill\"";
+                }
+                if ($stroke) {
+                    $svgTag .= " stroke=\"$stroke\"";
+                }
+                if ($strokeWidth) {
+                    $svgTag .= " stroke-width=\"$strokeWidth\"";
+                }
+
+                $svgTag .= ">$svgContent</svg>";
+
+                return $svgTag;
+            }
         }
 
         if(!$width) {
             $width = $media->width;
         }
-
-        $style = $transitionName ? " style=\"view-transition-name: $transitionName\"" : '';
 
         $targetHeight = $media->height * ($width / $media->width);
 
