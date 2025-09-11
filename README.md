@@ -74,10 +74,10 @@ If you need to customize migrations or seeders:
 
 ```bash
 # Publish migrations
-php artisan vendor:publish --tag=media-manager-migrations
+php artisan vendor:publish --tag=core-cms-migrations
 
 # Publish seeders
-php artisan vendor:publish --tag=media-manager-seeders
+php artisan vendor:publish --tag=core-cms-seeders
 ```
 
 ### 4. Storage Configuration
