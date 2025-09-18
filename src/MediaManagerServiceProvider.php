@@ -3,6 +3,7 @@
 namespace Netauratech\MediaManager;
 
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Route;
 use Netauratech\CoreCms\Services\AbstractCmsServiceProvider;
 use Netauratech\CoreCms\Form\FormRegistry;
 use Netauratech\CoreCms\Contracts\MediaProviderInterface;
@@ -22,6 +23,7 @@ class MediaManagerServiceProvider extends AbstractCmsServiceProvider
         $config = parent::getBootstrapConfig();
 
         $config['routes']['admin'] = false;
+        $config['routes']['api'] = false;
         $config['routes']['auth'] = false;
         $config['publishes']['config'] = false;
         $config['publishes']['assets'] = false;
@@ -49,6 +51,14 @@ class MediaManagerServiceProvider extends AbstractCmsServiceProvider
                 ]
             ],
         ]);
+
+        Route::group([
+            'prefix' => 'api',
+            'as' => 'api.',
+            'middleware' => ['web', 'auth'],
+        ], function () {
+            $this->loadRoutesFrom(__DIR__.'/routes/api.php');
+        });
 
         $formRegistry->registerValidationRules('content_form', [
             $mediaKey => ['nullable', 'integer'],
