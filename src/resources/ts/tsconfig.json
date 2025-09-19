@@ -1,5 +1,4 @@
 {
-  "extends": "../../../../../../app-global/tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
