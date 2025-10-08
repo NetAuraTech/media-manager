@@ -216,25 +216,39 @@ class MediaProvider implements MediaProviderInterface
      * @param string|null $alt The alternative text for the image, for accessibility. Defaults to null.
      * @param int|null $width The width of the image in pixels. Defaults to null.
      * @param string|null $transitionName A CSS transition name (e.g., for frontend animations). Defaults to null.
-     * @param string|null $class Additional CSS classes to apply to the <img> tag. Defaults to null.
+     * @param string|null $classes Additional CSS classes to apply to the <img> tag. Defaults to null.
+     * @param array $styles Additional styles to apply to the <img> tag. Defaults to [].
      * @return string|null The generated HTML <img> tag as a string, or null if the image cannot be generated.
      */
-    public function image_tag(int $id, ?string $alt = null, ?int $width = null, ?string $transitionName = null, ?string $class = null): ?string
-    {
+    public function image_tag(
+        int $id,
+        ?string $alt = null,
+        ?int $width = null,
+        ?string $transitionName = null,
+        ?string $classes = null,
+        array $styles = []
+    ): ?string {
         $media = $this->get($id);
 
-        if($media === null) {
+        if ($media === null) {
             return null;
         }
 
-        $style = $transitionName ? " style=\"view-transition-name: $transitionName\"" : '';
+        $styleParts = [];
+        if ($transitionName) {
+            $styleParts[] = "view-transition-name: $transitionName";
+        }
+        if (count($styles) > 0) {
+            $styleParts[] = implode(';', $styles);
+        }
+        $styleAttr = $styleParts ? ' style="' . implode('; ', $styleParts) . '"' : '';
 
-        if($media->isSvgImage()) {
-            if(!$width) {
+        if ($media->isSvgImage()) {
+            if (!$width) {
                 $width = $media->width ?: 512;
             }
 
-            $targetHeight = ($media->height ?? 512) * ($width /( $media->width ?? 512));
+            $targetHeight = ($media->height ?? 512) * ($width / ($media->width ?? 512));
 
             $svgContent = Storage::disk('public')->get("medias/{$media->filename}");
 
@@ -252,7 +266,7 @@ class MediaProvider implements MediaProviderInterface
 
                 $svgContent = preg_replace('/<svg[^>]*>|<\/svg>/', '', $svgContent);
 
-                $svgTag = "<svg {$style} class=\"$class\" width=\"$width\" height=\"$targetHeight\" aria-label=\"$alt\"";
+                $svgTag = "<svg {$styleAttr} class=\"$classes\" width=\"$width\" height=\"$targetHeight\" aria-label=\"$alt\"";
 
                 if ($viewBox) {
                     $svgTag .= " viewBox=\"$viewBox\"";
@@ -273,7 +287,7 @@ class MediaProvider implements MediaProviderInterface
             }
         }
 
-        if(!$width) {
+        if (!$width) {
             $width = $media->width;
         }
 
@@ -286,7 +300,7 @@ class MediaProvider implements MediaProviderInterface
                 $alt = $media->filename;
             }
 
-            return "<img {$style} class=\"$class\" src=\"$url\" width=\"$width\" height=\"$targetHeight\" alt=\"$alt\"/>";
+            return "<img {$styleAttr} class=\"$classes\" src=\"$url\" width=\"$width\" height=\"$targetHeight\" alt=\"$alt\"/>";
         }
 
         return null;
