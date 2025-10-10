@@ -65,15 +65,15 @@ class MediaManagerServiceProvider extends AbstractCmsServiceProvider
         ]);
 
         $formRegistry->registerFormFields('content_meta', [
-            'meta' => ['template' => 'media-manager::blog.meta'],
+            'meta' => ['template' => 'media-manager::content.meta'],
         ]);
 
-        $formRegistry->registerFormFields('blog_media', [
-            'media' => ['template' => 'media-manager::blog.media'],
+        $formRegistry->registerFormFields('content_media', [
+            'media' => ['template' => 'media-manager::content.media'],
         ]);
 
-        $formRegistry->registerFormFields('blog_media_single', [
-            'media' => ['template' => 'media-manager::blog.media_single'],
+        $formRegistry->registerFormFields('content_media_single', [
+            'media' => ['template' => 'media-manager::content.media_single'],
         ]);
 
         $formRegistry->registerFormFields('option_media', [
