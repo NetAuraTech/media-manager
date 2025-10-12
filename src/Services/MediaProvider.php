@@ -214,7 +214,7 @@ class MediaProvider implements MediaProviderInterface
      *
      * @param int $id The image id.
      * @param string|null $alt The alternative text for the image, for accessibility. Defaults to null.
-     * @param int|null $width The width of the image in pixels. Defaults to null.
+     * @param int|null $height The height of the image in pixels. Defaults to null.
      * @param string|null $transitionName A CSS transition name (e.g., for frontend animations). Defaults to null.
      * @param string|null $classes Additional CSS classes to apply to the <img> tag. Defaults to null.
      * @param array $styles Additional styles to apply to the <img> tag. Defaults to [].
@@ -223,7 +223,7 @@ class MediaProvider implements MediaProviderInterface
     public function image_tag(
         int $id,
         ?string $alt = null,
-        ?int $width = null,
+        ?int $height = null,
         ?string $transitionName = null,
         ?string $classes = null,
         array $styles = []
@@ -244,11 +244,11 @@ class MediaProvider implements MediaProviderInterface
         $styleAttr = $styleParts ? ' style="' . implode('; ', $styleParts) . '"' : '';
 
         if ($media->isSvgImage()) {
-            if (!$width) {
-                $width = $media->width ?: 512;
+            if (!$height) {
+                $height = $media->height ?: 512;
             }
 
-            $targetHeight = ($media->height ?? 512) * ($width / ($media->width ?? 512));
+            $targetWidth = ($media->width ?? 512) * ($height / ($media->height ?? 512));
 
             $svgContent = Storage::disk('public')->get("medias/{$media->filename}");
 
@@ -266,7 +266,7 @@ class MediaProvider implements MediaProviderInterface
 
                 $svgContent = preg_replace('/<svg[^>]*>|<\/svg>/', '', $svgContent);
 
-                $svgTag = "<svg {$styleAttr} class=\"$classes\" width=\"$width\" height=\"$targetHeight\" aria-label=\"$alt\"";
+                $svgTag = "<svg {$styleAttr} class=\"$classes\" width=\"$targetWidth\" height=\"$height\" aria-label=\"$alt\"";
 
                 if ($viewBox) {
                     $svgTag .= " viewBox=\"$viewBox\"";
@@ -287,20 +287,20 @@ class MediaProvider implements MediaProviderInterface
             }
         }
 
-        if (!$width) {
-            $width = $media->width;
+        if (!$height) {
+            $height = $media->height;
         }
 
-        $targetHeight = $media->height * ($width / $media->width);
+        $targetWidth = $media->width * ($height / $media->height);
 
-        $url = $this->url($media->id, ['w' => $width, 'h' => $targetHeight]);
+        $url = $this->url($media->id, ['w' => $targetWidth, 'h' => $height]);
 
         if ('' !== $url) {
             if (!$alt) {
                 $alt = $media->filename;
             }
 
-            return "<img {$styleAttr} class=\"$classes\" src=\"$url\" width=\"$width\" height=\"$targetHeight\" alt=\"$alt\"/>";
+            return "<img {$styleAttr} class=\"$classes\" src=\"$url\" width=\"$targetWidth\" height=\"$height\" alt=\"$alt\"/>";
         }
 
         return null;
