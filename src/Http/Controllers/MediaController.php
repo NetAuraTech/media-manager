@@ -103,6 +103,10 @@ class MediaController extends AdminController
     public function search(string $q): Collection
     {
         return Media::where('filename', 'LIKE', '%' . $q . '%')
+            ->orWhereHas('alts', function ($query) use ($q) {
+                $query->where('alt_text', 'LIKE', '%' . $q . '%');
+            })
+            ->with('alts')
             ->orderBy('created_at', 'DESC')
             ->limit(25)
             ->get();
@@ -161,6 +165,11 @@ class MediaController extends AdminController
             'size' => $media->filesize,
             'url' => $url,
             'thumbnail' => $this->mediaProvider->url($media->id, ['w' => 250, 'h' => 100]),
+            'alts' => $media->alts->map(fn($alt) => [
+                'id' => $alt->id,
+                'text' => $alt->alt_text,
+                'isDefault' => $alt->is_default,
+            ])->toArray(),
         ];
     }
 

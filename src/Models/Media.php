@@ -4,6 +4,7 @@ namespace Netauratech\MediaManager\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 class Media extends Model
@@ -29,7 +30,7 @@ class Media extends Model
     ];
 
     /**
-     * The “booted” method of the model.
+     * The "booted" method of the model.
      * Registers an event listener to delete the physical file
      * when the media entry is deleted from the database.
      */
@@ -41,11 +42,37 @@ class Media extends Model
     }
 
     /**
+     * Get all alt texts for this media.
+     */
+    public function alts(): HasMany
+    {
+        return $this->hasMany(MediaAlt::class);
+    }
+
+    /**
+     * Get the default alt text for this media.
+     *
+     * @return string|null
+     */
+    public function getDefaultAlt(): ?string
+    {
+        $defaultAlt = $this->alts()->where('is_default', true)->first();
+
+        if ($defaultAlt) {
+            return $defaultAlt->alt_text;
+        }
+
+        // Fallback on filename without extension
+        $info = pathinfo($this->filename);
+        return $info['filename'] ?? $this->filename;
+    }
+
+    /**
      * Determines and returns the generic type of media based on its MIME type.
      * This method can be used internally or as an accessor (mutator).
      *
      * @param string $mimeType The MIME type of the file.
-     * @return string The generic type (‘image’, ‘document’, ‘video’, ‘audio’, ‘other’).
+     * @return string The generic type ('image', 'document', 'video', 'audio', 'other').
      */
     public static function determineMediaType(string $mimeType): string
     {

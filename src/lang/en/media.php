@@ -16,5 +16,18 @@ return [
         'upload' => [
             'error' => 'Unable to upload the image.',
         ],
+        'alts' => [
+            'manage' => 'Manage alternative texts',
+            'modal' => [
+                'title' => 'Alternative texts management',
+                'default' => 'Default alternative text',
+                'default_required' => 'A default alternative text is required',
+                'alternatives' => 'Additional alternative texts',
+                'add' => 'Add alternative text',
+                'cancel' => 'Cancel',
+                'save' => 'Save',
+                'placeholder' => 'Image description',
+            ],
+        ],
     ],
 ];

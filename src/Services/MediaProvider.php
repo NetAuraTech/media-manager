@@ -234,6 +234,10 @@ class MediaProvider implements MediaProviderInterface
             return null;
         }
 
+        if ($alt === null) {
+            $alt = $media->getDefaultAlt();
+        }
+
         $styleParts = [];
         if ($transitionName) {
             $styleParts[] = "view-transition-name: $transitionName";
@@ -296,10 +300,6 @@ class MediaProvider implements MediaProviderInterface
         $url = $this->url($media->id, ['w' => $targetWidth, 'h' => $height]);
 
         if ('' !== $url) {
-            if (!$alt) {
-                $alt = $media->filename;
-            }
-
             return "<img {$styleAttr} class=\"$classes\" src=\"$url\" width=\"$targetWidth\" height=\"$height\" alt=\"$alt\"/>";
         }
 

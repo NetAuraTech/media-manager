@@ -1,3 +1,9 @@
+export type Alt = {
+  id: number;
+  text: string;
+  isDefault: boolean;
+};
+
 export type Folder = {
   folder: string;
   count: number;
@@ -16,6 +22,7 @@ export type File = {
   size: number;
   url: string;
   thumbnail: string;
+  alts: Alt[];
 };
 
 export type Violation = {
