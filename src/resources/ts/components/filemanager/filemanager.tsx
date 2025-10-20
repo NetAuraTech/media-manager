@@ -5,7 +5,7 @@ import {
 } from './types'
 import { Folder } from './folder'
 import { File } from './file'
-import { AltManager } from './AltManager'
+import { AltManager } from './altmanager'
 import {defineI18n, translate} from "@core-cms-shared/functions/i18n";
 import {useEffect, useRef, useState} from "preact/compat";
 import {jsonFetch} from "@core-cms-shared/functions/api";
