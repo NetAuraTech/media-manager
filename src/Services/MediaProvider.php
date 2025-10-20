@@ -234,7 +234,7 @@ class MediaProvider implements MediaProviderInterface
             return null;
         }
 
-        if ($alt === null) {
+        if ($alt === null || $alt === "") {
             $alt = $media->getDefaultAlt();
         }
 
