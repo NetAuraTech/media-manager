@@ -213,7 +213,7 @@ class MediaProvider implements MediaProviderInterface
      * additional classes, and preloading.
      *
      * @param int $id The image id.
-     * @param string|null $alt The alternative text for the image, for accessibility. Defaults to null.
+     * @param string|int|null $alt The alt text ID to use. If null or empty, uses the default alt from database.
      * @param int|null $height The height of the image in pixels. Defaults to null.
      * @param string|null $transitionName A CSS transition name (e.g., for frontend animations). Defaults to null.
      * @param string|null $classes Additional CSS classes to apply to the <img> tag. Defaults to null.
@@ -222,7 +222,7 @@ class MediaProvider implements MediaProviderInterface
      */
     public function image_tag(
         int $id,
-        ?string $alt = null,
+        string|int|null $alt = null,
         ?int $height = null,
         ?string $transitionName = null,
         ?string $classes = null,
@@ -234,14 +234,24 @@ class MediaProvider implements MediaProviderInterface
             return null;
         }
 
-        if ($alt === null || $alt === "") {
-            $alt = $media->getDefaultAlt();
+        $altText = null;
+
+        if ($alt !== null && $alt !== '') {
+            $mediaAlt = $media->alts->firstWhere('id', (int)$alt);
+            if ($mediaAlt) {
+                $altText = $mediaAlt->alt_text;
+            }
+        }
+
+        if ($altText === null) {
+            $altText = $media->getDefaultAlt();
         }
 
         $styleParts = [];
         if ($transitionName) {
             $styleParts[] = "view-transition-name: $transitionName";
         }
+
         if (count($styles) > 0) {
             $styleParts[] = implode(';', $styles);
         }
@@ -270,7 +280,7 @@ class MediaProvider implements MediaProviderInterface
 
                 $svgContent = preg_replace('/<svg[^>]*>|<\/svg>/', '', $svgContent);
 
-                $svgTag = "<svg {$styleAttr} class=\"$classes\" width=\"$targetWidth\" height=\"$height\" aria-label=\"$alt\"";
+                $svgTag = "<svg {$styleAttr} class=\"$classes\" width=\"$targetWidth\" height=\"$height\" aria-label=\"$altText\"";
 
                 if ($viewBox) {
                     $svgTag .= " viewBox=\"$viewBox\"";
@@ -300,7 +310,7 @@ class MediaProvider implements MediaProviderInterface
         $url = $this->url($media->id, ['w' => $targetWidth, 'h' => $height]);
 
         if ('' !== $url) {
-            return "<img {$styleAttr} class=\"$classes\" src=\"$url\" width=\"$targetWidth\" height=\"$height\" alt=\"$alt\"/>";
+            return "<img {$styleAttr} class=\"$classes\" src=\"$url\" width=\"$targetWidth\" height=\"$height\" alt=\"$altText\"/>";
         }
 
         return null;
