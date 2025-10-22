@@ -235,14 +235,12 @@ class MediaProvider implements MediaProviderInterface
         }
 
         $altText = null;
-
         if ($alt !== null && $alt !== '') {
             $mediaAlt = $media->alts->firstWhere('id', (int)$alt);
             if ($mediaAlt) {
                 $altText = $mediaAlt->alt_text;
             }
         }
-
         if ($altText === null) {
             $altText = $media->getDefaultAlt();
         }
@@ -251,7 +249,6 @@ class MediaProvider implements MediaProviderInterface
         if ($transitionName) {
             $styleParts[] = "view-transition-name: $transitionName";
         }
-
         if (count($styles) > 0) {
             $styleParts[] = implode(';', $styles);
         }
@@ -263,7 +260,6 @@ class MediaProvider implements MediaProviderInterface
             }
 
             $targetWidth = ($media->width ?? 512) * ($height / ($media->height ?? 512));
-
             $svgContent = Storage::disk('public')->get("medias/{$media->filename}");
 
             if ($svgContent !== false) {
@@ -280,21 +276,11 @@ class MediaProvider implements MediaProviderInterface
 
                 $svgContent = preg_replace('/<svg[^>]*>|<\/svg>/', '', $svgContent);
 
-                $svgTag = "<svg {$styleAttr} class=\"$classes\" width=\"$targetWidth\" height=\"$height\" aria-label=\"$altText\"";
-
-                if ($viewBox) {
-                    $svgTag .= " viewBox=\"$viewBox\"";
-                }
-                if ($fill) {
-                    $svgTag .= " fill=\"$fill\"";
-                }
-                if ($stroke) {
-                    $svgTag .= " stroke=\"$stroke\"";
-                }
-                if ($strokeWidth) {
-                    $svgTag .= " stroke-width=\"$strokeWidth\"";
-                }
-
+                $svgTag = "<svg{$styleAttr} class=\"$classes\" width=\"$targetWidth\" height=\"$height\" aria-label=\"$altText\"";
+                if ($viewBox) $svgTag .= " viewBox=\"$viewBox\"";
+                if ($fill) $svgTag .= " fill=\"$fill\"";
+                if ($stroke) $svgTag .= " stroke=\"$stroke\"";
+                if ($strokeWidth) $svgTag .= " stroke-width=\"$strokeWidth\"";
                 $svgTag .= ">$svgContent</svg>";
 
                 return $svgTag;
@@ -306,13 +292,33 @@ class MediaProvider implements MediaProviderInterface
         }
 
         $targetWidth = $media->width * ($height / $media->height);
-
         $url = $this->url($media->id, ['w' => $targetWidth, 'h' => $height]);
 
-        if ('' !== $url) {
-            return "<img {$styleAttr} class=\"$classes\" src=\"$url\" width=\"$targetWidth\" height=\"$height\" alt=\"$altText\"/>";
+        if ($url === '') {
+            return null;
         }
 
-        return null;
+        $ratios = [0.25, 0.33, 0.5, 0.66, 0.75, 0.85, 1.0, 1.15, 1.33, 1.5, 1.75, 2.0];
+
+        $widths = [];
+        foreach ($ratios as $ratio) {
+            $widths[] = (int)round($targetWidth * $ratio);
+        }
+
+        $widths = array_unique(array_filter($widths, fn($w) => $w >= 200));
+
+        $srcset = [];
+        foreach ($widths as $w) {
+            $h = (int)round($media->height * ($w / $media->width));
+            $variantUrl = $this->url($media->id, ['w' => $w, 'h' => $h]);
+            if ($variantUrl) {
+                $srcset[] = "$variantUrl {$w}w";
+            }
+        }
+
+        $srcsetAttr = count($srcset) > 0 ? ' srcset="' . implode(', ', $srcset) . '"' : '';
+        $sizesAttr = ' sizes="(max-width: 576px) 100vw, (max-width: 992px) 70vw, (max-width: 1400px) 50vw, ' . (int)$targetWidth . 'px"';
+
+        return "<img{$styleAttr} class=\"$classes\" src=\"$url\" width=\"$targetWidth\" height=\"$height\" alt=\"$altText\"{$srcsetAttr}{$sizesAttr}/>";
     }
 }
