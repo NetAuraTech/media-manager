@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use Netauratech\CoreCms\Services\AbstractCmsServiceProvider;
 use Netauratech\CoreCms\Form\FormRegistry;
 use Netauratech\CoreCms\Contracts\MediaProviderInterface;
+use Netauratech\MediaManager\Models\Media;
 use Netauratech\MediaManager\Services\MediaProvider;
 use Netauratech\CoreCms\Events\ContentSaved;
 use Netauratech\MediaManager\Listeners\UpdateContentMedia;
@@ -34,6 +35,7 @@ class MediaManagerServiceProvider extends AbstractCmsServiceProvider
     public function register(): void
     {
         $this->app->bind(MediaProviderInterface::class, MediaProvider::class);
+        config(['core-cms.media.model' => Media::class]);
     }
 
     public function boot(FormRegistry $formRegistry): void
