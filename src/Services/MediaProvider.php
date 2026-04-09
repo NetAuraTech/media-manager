@@ -190,6 +190,10 @@ class MediaProvider implements MediaProviderInterface
      */
     public function getImageUrl(string|int $id, ?int $width = null, ?int $height = null): string
     {
+        if($id === '') {
+            return '';
+        }
+
         $params = [];
         if ($width) {
             $params['w'] = $width;
