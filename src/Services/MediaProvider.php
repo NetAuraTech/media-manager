@@ -5,6 +5,7 @@ namespace Netauratech\MediaManager\Services;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 use League\Glide\Filesystem\FileNotFoundException;
 use League\Glide\Filesystem\FilesystemException;
 use League\Glide\Responses\SymfonyResponseFactory;
@@ -24,6 +25,8 @@ class MediaProvider implements MediaProviderInterface
     protected UrlBuilder $urlBuilder;
 
     protected string $path = "medias";
+
+    protected static array $resolvedMedias = [];
 
     public function __construct()
     {
@@ -82,7 +85,23 @@ class MediaProvider implements MediaProviderInterface
      */
     public function get(int $id): ?Media
     {
-        return Media::find($id);
+        if (isset(self::$resolvedMedias[$id])) {
+            return self::$resolvedMedias[$id];
+        }
+
+        $media = Cache::remember("media_full_{$id}", 3600, function () use ($id) {
+            $item = Media::find($id);
+
+            if($item) {
+                $item->load('alts');
+            }
+
+            return $item;
+        });
+
+        self::$resolvedMedias[$id] = $media;
+
+        return $media;
     }
 
     /**
@@ -96,6 +115,8 @@ class MediaProvider implements MediaProviderInterface
     {
         $media = $this->get($id);
         if ($media) {
+            Cache::forget("media_item_{$id}");
+            unset(self::$resolvedMedias[$id]);
             return $media->delete();
         }
         return false;
@@ -190,7 +211,7 @@ class MediaProvider implements MediaProviderInterface
      */
     public function getImageUrl(string|int $id, ?int $width = null, ?int $height = null): string
     {
-        if($id === '') {
+        if($id === '' || $id === 0) {
             return '';
         }
 
@@ -206,7 +227,7 @@ class MediaProvider implements MediaProviderInterface
             $params['fit'] = $params['fit'] ?? 'crop';
         }
 
-        return $this->url($id, $params);
+        return $this->url((int)$id, $params);
     }
 
     /**
@@ -295,25 +316,23 @@ class MediaProvider implements MediaProviderInterface
             $height = $media->height;
         }
 
-        $targetWidth = $media->width * ($height / $media->height);
-        $url = $this->url($media->id, ['w' => $targetWidth, 'h' => $height]);
+        $baseHeight = $media->height ?: 1;
+        $baseWidth = $media->width ?: 1;
+
+        $targetWidth = $baseWidth * ($height / $baseHeight);
+        $url = $this->url($media->id, ['w' => (int)$targetWidth, 'h' => $height]);
 
         if ($url === '') {
             return null;
         }
 
-        $ratios = [0.25, 0.33, 0.5, 0.66, 0.75, 0.85, 1.0, 1.15, 1.33, 1.5, 1.75, 2.0];
-
-        $widths = [];
-        foreach ($ratios as $ratio) {
-            $widths[] = (int)round($targetWidth * $ratio);
-        }
-
-        $widths = array_unique(array_filter($widths, fn($w) => $w >= 200));
-
+        $ratios = [0.25, 0.5, 1.0, 1.5, 2.0];
         $srcset = [];
-        foreach ($widths as $w) {
-            $h = (int)round($media->height * ($w / $media->width));
+        foreach ($ratios as $ratio) {
+            $w = (int)round($targetWidth * $ratio);
+            if ($w < 200) continue;
+
+            $h = (int)round($baseHeight * ($w / $baseWidth));
             $variantUrl = $this->url($media->id, ['w' => $w, 'h' => $h]);
             if ($variantUrl) {
                 $srcset[] = "$variantUrl {$w}w";
@@ -321,8 +340,8 @@ class MediaProvider implements MediaProviderInterface
         }
 
         $srcsetAttr = count($srcset) > 0 ? ' srcset="' . implode(', ', $srcset) . '"' : '';
-        $sizesAttr = ' sizes="(max-width: 576px) 100vw, (max-width: 992px) 70vw, (max-width: 1400px) 50vw, ' . (int)$targetWidth . 'px"';
+        $sizesAttr = ' sizes="(max-width: 576px) 100vw, (max-width: 992px) 70vw, ' . (int)$targetWidth . 'px"';
 
-        return "<img{$styleAttr} class=\"$classes\" src=\"$url\" width=\"$targetWidth\" height=\"$height\" alt=\"$altText\"{$srcsetAttr}{$sizesAttr}/>";
+        return "<img{$styleAttr} class=\"$classes\" src=\"$url\" width=\"$targetWidth\" height=\"$height\" alt=\"$altText\"{$srcsetAttr}{$sizesAttr} loading=\"lazy\"/>";
     }
 }

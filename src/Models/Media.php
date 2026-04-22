@@ -56,7 +56,7 @@ class Media extends Model
      */
     public function getDefaultAlt(): ?string
     {
-        $defaultAlt = $this->alts()->where('is_default', true)->first();
+        $defaultAlt = $this->alts->firstWhere('is_default', true);
 
         if ($defaultAlt) {
             return $defaultAlt->alt_text;
